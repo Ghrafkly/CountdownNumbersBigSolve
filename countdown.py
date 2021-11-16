@@ -30,7 +30,7 @@ class Calculations:
 
         for permutation in permutations(variables):
             a, b, *rest = permutation
-            operations = list(product(ops, repeat=6))
+            operations = list(product(ops, repeat=5))
             for permutation in operations:
                 equation = zip([a + b, *rest], permutation)
                 equations.add("".join(variable + "" + operator for variable, operator in equation))

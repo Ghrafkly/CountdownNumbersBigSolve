@@ -1,8 +1,8 @@
 import numpy as np
-from itertools import permutations, product
+from itertools import permutations, product, combinations_with_replacement
 import re
 
-tileSetSize = 5 # Specifies the size of the tileset
+tileSetSize = 3 # Specifies the size of the tileset
 
 class StoreNumber:
     def __init__(self):
@@ -22,15 +22,16 @@ class Calculations:
 
     def rpn(self, variables):
         ops = ['+', '-', '*', '/']
+        opnumber = tileSetSize-2
         equations = set()
         remove = set()
 
-        for permutation in permutations(variables):
-            a, b, *rest = permutation
-            operations = list(product(ops, repeat=tileSetSize-1)) # The amount of operations for each tileset
-            for permutation in operations:
-                equation = zip([a + b, *rest], permutation)
-                equations.add("".join(variable + "" + operator for variable, operator in equation))
+        for n1, n2, *nums in permutations(variables):
+            nums += ["%s"]*opnumber
+            for p in {*permutations(nums)}:
+                for operators in product(ops, repeat=opnumber):
+                    for last in ops:
+                        equations.add("".join((n1,n2,*p,last)) % operators)
 
         print("Before clean: " + str(len(equations)))                
 
@@ -46,7 +47,6 @@ class Calculations:
         equations -= remove
 
         print("After clean: " + str(len(equations)))
-        #print(equations)
 
 def main():
     sn = StoreNumber()

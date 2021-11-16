@@ -3,6 +3,8 @@ import numpy as np
 from itertools import permutations, product
 import re
 
+tileSetSize = 4 # Specifies the size of the tileset
+
 class StoreNumber:
     def __init__(self):
         self.id_ = None
@@ -13,7 +15,7 @@ class StoreNumber:
     def tiles(self):
         numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
         #numbers = [1,2,3,4,5,6]
-        numbers_6 = list(np.random.choice(numbers, size=3, replace = False)) # Generate n (size) tiles/numbers
+        numbers_6 = list(np.random.choice(numbers, size=tileSetSize, replace = False)) # Generate how many numbers per tile/numberset
         self.setOf.add(tuple(sorted(numbers_6))) # Sort the generated list then add to set. This avoids numbersets that have the same numbers but different order.
 
     def printSet(self):
@@ -30,7 +32,7 @@ class Calculations:
 
         for permutation in permutations(variables):
             a, b, *rest = permutation
-            operations = list(product(ops, repeat=5))
+            operations = list(product(ops, repeat=tileSetSize-1)) # The amount of operations for each tileset
             for permutation in operations:
                 equation = zip([a + b, *rest], permutation)
                 equations.add("".join(variable + "" + operator for variable, operator in equation))
@@ -53,7 +55,8 @@ class Calculations:
         equations -= remove
 
         print("After clean: " + str(len(equations)))
-        
+        #print(equations)
+
 def main():
     sn = StoreNumber()
     i = 0
@@ -69,8 +72,8 @@ def main():
         calculations.rpn(map(str, list(sn.printSet())[k]))
         k += 1
     
-    print(list(sn.printSet()))
-    print("Number of tilesets: " + str(k))
+    print("Tilesets: " + str(list(sn.printSet())))
+    print("Number of tilesets: " + str(i))
     
 if __name__ == "__main__":
     main()

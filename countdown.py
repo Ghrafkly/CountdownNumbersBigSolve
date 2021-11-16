@@ -1,20 +1,15 @@
-from typing import Counter
 import numpy as np
 from itertools import permutations, product
 import re
 
-tileSetSize = 4 # Specifies the size of the tileset
+tileSetSize = 5 # Specifies the size of the tileset
 
 class StoreNumber:
     def __init__(self):
-        self.id_ = None
-        self.arr_ = None
         self.setOf = set()
-        self.seen = set()
 
     def tiles(self):
         numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
-        #numbers = [1,2,3,4,5,6]
         numbers_6 = list(np.random.choice(numbers, size=tileSetSize, replace = False)) # Generate how many numbers per tile/numberset
         self.setOf.add(tuple(sorted(numbers_6))) # Sort the generated list then add to set. This avoids numbersets that have the same numbers but different order.
 
@@ -43,15 +38,11 @@ class Calculations:
         for equation in equations:
             if equation not in remove:
                 for match in re.finditer(r"(?=(.+)(\w)[+*])", equation):
-
                     a, _ = match.span(1)
                     _, d = match.span(2)
-
                     equivalent = equation[:a] + match[2] + match[1] + equation[d:]
-
                     if equivalent != equation and equivalent in equations:
                         remove.add(equivalent)
-
         equations -= remove
 
         print("After clean: " + str(len(equations)))

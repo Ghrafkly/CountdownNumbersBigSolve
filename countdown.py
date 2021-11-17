@@ -1,8 +1,8 @@
 import numpy as np
-from itertools import permutations, product
+from itertools import permutations, product, combinations_with_replacement
 import re
 
-tileSetSize = 5 # Specifies the size of the tileset
+tileSetSize = 4 # Specifies the size of the tileset
 
 class StoreNumber:
     def __init__(self):
@@ -22,31 +22,54 @@ class Calculations:
 
     def rpn(self, variables):
         ops = ['+', '-', '*', '/']
-        equations = set()
-        remove = set()
+        opnumber = tileSetSize-2
+        equations = []
+        i = 0
+        invalid = 0
 
-        for permutation in permutations(variables):
-            a, b, *rest = permutation
-            operations = list(product(ops, repeat=tileSetSize-1)) # The amount of operations for each tileset
-            for permutation in operations:
-                equation = zip([a + b, *rest], permutation)
-                equations.add("".join(variable + "" + operator for variable, operator in equation))
+        for n1, n2, *nums in permutations(variables):
+            nums += ["%s"] * opnumber
+            for p in {*permutations(nums)}:
+                for operators in product(ops, repeat = opnumber):
+                    for last in ops:
+                        equations.append((" ".join((n1, n2, *p, last)) % operators))
 
-        print("Before clean: " + str(len(equations)))                
+        print("Total Equations: " + str(len(equations)))
 
-        # Reduce commutative equivalents: ca*a-b/ same as ac*a-b/
-        for equation in equations:
-            if equation not in remove:
-                for match in re.finditer(r"(?=(.+)(\w)[+*])", equation):
-                    a, _ = match.span(1)
-                    _, d = match.span(2)
-                    equivalent = equation[:a] + match[2] + match[1] + equation[d:]
-                    if equivalent != equation and equivalent in equations:
-                        remove.add(equivalent)
-        equations -= remove
+        #### Postfix must be n numbers in a row then n-1 ops in a row ####
+        while i < 1:
+            eq = (equations[i]).split()
+            stack = []
+            sm = 0
+            print(equations[i])
+            for term in eq:
+                if term.isdigit():
+                    stack.insert(0, int(term))
+                else:
+                    try:
+                        sm = (f'{stack.pop(1)} {term} {stack.pop(0)}') # Generates an equation based on the stack i.e. 1 + 2 (where stack is 1 2 +)
+                    except IndexError:
+                        invalid += 1
+                        break
 
-        print("After clean: " + str(len(equations)))
-        #print(equations)
+                    divide_multiply = sm.split()
+                    
+                    # If the equation is divided/multiplied by one, skip evaluating i.e. 2*1 = 2 or 2/1 = 2
+                    if (divide_multiply[1] == '/' and divide_multiply[2] == 1) or (divide_multiply[1] == '*' and divide_multiply[2] == 1):
+                        stack.insert(0, divide_multiply[0])
+                        break
+
+                    exp = eval(sm)                   
+                        
+                    if exp > 0 and float(exp).is_integer(): # Checks if the equation is greater than 0 and is a whole number
+                        stack.insert(0, exp) # Inserts result back into the stack
+                    else:
+                        invalid += 1
+                        break
+            i += 1
+            stack.clear() # Wipes the stack so the next RPN can be done
+        
+        print("Invalid Equations: " + str(invalid))
 
 def main():
     sn = StoreNumber()

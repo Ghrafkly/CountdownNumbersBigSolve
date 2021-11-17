@@ -2,7 +2,7 @@ import numpy as np
 from itertools import permutations, product, combinations_with_replacement
 import re
 
-tileSetSize = 3 # Specifies the size of the tileset
+tileSetSize = 4 # Specifies the size of the tileset
 
 class StoreNumber:
     def __init__(self):
@@ -23,30 +23,41 @@ class Calculations:
     def rpn(self, variables):
         ops = ['+', '-', '*', '/']
         opnumber = tileSetSize-2
-        equations = set()
-        remove = set()
+        equations = []
+        i = 0
+        valid = 0
+        invalid = 0
 
         for n1, n2, *nums in permutations(variables):
-            nums += ["%s"]*opnumber
+            nums += ["%s"] * opnumber
             for p in {*permutations(nums)}:
-                for operators in product(ops, repeat=opnumber):
+                for operators in product(ops, repeat = opnumber):
                     for last in ops:
-                        equations.add("".join((n1,n2,*p,last)) % operators)
+                        equations.append((" ".join((n1, n2, *p, last)) % operators))
 
-        print("Before clean: " + str(len(equations)))                
+        print("Total Equations: " + str(len(equations)))
 
-        # Reduce commutative equivalents: ca*a-b/ same as ac*a-b/
-        for equation in equations:
-            if equation not in remove:
-                for match in re.finditer(r"(?=(.+)(\w)[+*])", equation):
-                    a, _ = match.span(1)
-                    _, d = match.span(2)
-                    equivalent = equation[:a] + match[2] + match[1] + equation[d:]
-                    if equivalent != equation and equivalent in equations:
-                        remove.add(equivalent)
-        equations -= remove
+        #### Stack is in the wrong order ####
+        while i < 2:
+            eq = (equations[i]).split()
+            stack = []
+            sm = 0
 
-        print("After clean: " + str(len(equations)))
+            for term in eq:
+                if term.isdigit():
+                    stack.insert(0, int(term))
+                else:
+                    sm = (f'{stack.pop(-1)} {term} {stack.pop(-1)}')
+                    if eval(sm) > 0 and float(eval(sm)).is_integer():
+                    # if sm >= 0 and float(sm).is_integer():
+                        stack.insert(0, sm)
+                    else:
+                        invalid += 1
+                        break
+            i += 1
+            stack.clear()
+        
+        print("Invalid Equations: " + str(invalid))
 
 def main():
     sn = StoreNumber()

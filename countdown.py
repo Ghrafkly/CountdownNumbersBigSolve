@@ -25,7 +25,6 @@ class Calculations:
         opnumber = tileSetSize-2
         equations = []
         i = 0
-        valid = 0
         invalid = 0
 
         for n1, n2, *nums in permutations(variables):
@@ -37,25 +36,38 @@ class Calculations:
 
         print("Total Equations: " + str(len(equations)))
 
-        #### Stack is in the wrong order ####
-        while i < 2:
+        #### Postfix must be n numbers in a row then n-1 ops in a row ####
+        while i < 1:
             eq = (equations[i]).split()
             stack = []
             sm = 0
-
+            print(equations[i])
             for term in eq:
                 if term.isdigit():
                     stack.insert(0, int(term))
                 else:
-                    sm = (f'{stack.pop(-1)} {term} {stack.pop(-1)}')
-                    if eval(sm) > 0 and float(eval(sm)).is_integer():
-                    # if sm >= 0 and float(sm).is_integer():
-                        stack.insert(0, sm)
+                    try:
+                        sm = (f'{stack.pop(1)} {term} {stack.pop(0)}') # Generates an equation based on the stack i.e. 1 + 2 (where stack is 1 2 +)
+                    except IndexError:
+                        invalid += 1
+                        break
+
+                    divide_multiply = sm.split()
+                    
+                    # If the equation is divided/multiplied by one, skip evaluating i.e. 2*1 = 2 or 2/1 = 2
+                    if (divide_multiply[1] == '/' and divide_multiply[2] == 1) or (divide_multiply[1] == '*' and divide_multiply[2] == 1):
+                        stack.insert(0, divide_multiply[0])
+                        break
+
+                    exp = eval(sm)                   
+                        
+                    if exp > 0 and float(exp).is_integer(): # Checks if the equation is greater than 0 and is a whole number
+                        stack.insert(0, exp) # Inserts result back into the stack
                     else:
                         invalid += 1
                         break
             i += 1
-            stack.clear()
+            stack.clear() # Wipes the stack so the next RPN can be done
         
         print("Invalid Equations: " + str(invalid))
 

@@ -1,41 +1,61 @@
 from itertools import permutations, product
 
-variables = ['100', '50', '2', '8']
+variables = ['100', '50', '10']
 ops = ['+', '-', '*', '/']
 # opnumber = len(variables)-2 # Pre
 opnumber = len(variables)-1 # Post
 equations = []
 invalid = 0
 coun = 0
-eqCount = 0
-permCount = 0
 
 for nums in permutations(variables):
-    nums += tuple(("%s",)) * opnumber
-
-for p in permutations(nums):
-    permCount += 1
     for operators in product(ops, repeat = opnumber):
-        eqCheck = (" ".join(p) % operators).split()
-        eqCount += 1
-        if (eqCheck[0].isdigit() and eqCheck[1].isdigit() and (eqCheck[-1].isdigit() != True)):
-            for x in eqCheck:
-                if x.isdigit():
-                        coun += 1
-                else:
-                    coun -= 1
-                    if coun == 0:
-                        break
-            if coun == 1:
-                equations.append(eqCheck)
-                coun = 0
+        nums += operators
+        print(nums)
+        nums = tuple
+        # for p in permutations(nums):
+        #     eqCheck = (" ".join(p)).split()
+        #     if (eqCheck[0].isdigit() and eqCheck[1].isdigit() and (eqCheck[-1].isdigit() != True)):
+        #         for x in eqCheck:
+        #             if x.isdigit():
+        #                     coun += 1
+        #             else:
+        #                 coun -= 1
+        #                 if coun == 0:
+        #                     break
+        #         if coun == 1:
+        #             equations.append(eqCheck)
+        #             coun = 0
+
+print(len(equations))
+
+
+
+
+# for nums in permutations(variables):
+#     nums += tuple(("%s",)) * opnumber
+
+# for p in permutations(nums):
+#     for operators in product(ops, repeat = opnumber):
+#         eqCheck = (" ".join(p) % operators).split()
+#         if (eqCheck[0].isdigit() and eqCheck[1].isdigit() and (eqCheck[-1].isdigit() != True)):
+#             for x in eqCheck:
+#                 if x.isdigit():
+#                         coun += 1
+#                 else:
+#                     coun -= 1
+#                     if coun == 0:
+#                         break
+#             if coun == 1:
+#                 equations.append(eqCheck)
+#                 coun = 0
+
+# print(len(equations))
 
 # for n1, n2, *nums in permutations(variables):
 #     nums += ["%s"] * opnumber
-#     permCount += 1
 #     for p in {*permutations(nums)}:
 #         for operators in product(ops, repeat = opnumber):
-#             eqCount += 1
 #             for last in ops:
 #                 eqCheck = (" ".join((n1, n2, *p, last)) % operators).split()
 #                 for x in eqCheck:
@@ -78,8 +98,3 @@ for p in permutations(nums):
 
 # print("Valid Equations: " + str((len(equations)) - (invalid)))
 # print("Invalid Equations: " + str(invalid))
-
-print(permCount)
-print(eqCount)
-# print(equations)
-print(len(equations))

@@ -1,8 +1,7 @@
 import numpy as np
-from itertools import permutations, product, combinations_with_replacement
-import re
+from itertools import permutations, product
 
-tileSetSize = 4 # Specifies the size of the tileset
+tileSetSize = 5 # Specifies the size of the tileset
 
 class StoreNumber:
     def __init__(self):
@@ -24,24 +23,33 @@ class Calculations:
         ops = ['+', '-', '*', '/']
         opnumber = tileSetSize-2
         equations = []
-        i = 0
         invalid = 0
+        coun = 0
 
         for n1, n2, *nums in permutations(variables):
             nums += ["%s"] * opnumber
             for p in {*permutations(nums)}:
                 for operators in product(ops, repeat = opnumber):
                     for last in ops:
-                        equations.append((" ".join((n1, n2, *p, last)) % operators))
+                        eqCheck = (" ".join((n1, n2, *p, last)) % operators).split()
+                        for x in eqCheck:
+                            if x.isdigit():
+                                coun += 1
+                            else:
+                                coun -= 1
+                                if coun == 0:
+                                    break
+                        if coun == 1:
+                            equations.append(eqCheck)
+                            coun = 0
 
         print("Total Equations: " + str(len(equations)))
 
-        #### Postfix must be n numbers in a row then n-1 ops in a row ####
-        while i < 1:
-            eq = (equations[i]).split()
+        #### Postfix must be n numbers in a row then up to n-1 ops in a row ####
+        for eq in equations:
             stack = []
             sm = 0
-            print(equations[i])
+
             for term in eq:
                 if term.isdigit():
                     stack.insert(0, int(term))
@@ -66,10 +74,12 @@ class Calculations:
                     else:
                         invalid += 1
                         break
-            i += 1
+
             stack.clear() # Wipes the stack so the next RPN can be done
         
+        print("Valid Equations: " + str((len(equations)) - (invalid)))
         print("Invalid Equations: " + str(invalid))
+        
 
 def main():
     sn = StoreNumber()

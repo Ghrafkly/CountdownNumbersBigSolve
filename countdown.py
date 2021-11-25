@@ -1,8 +1,9 @@
 import numpy as np
-from itertools import permutations, product, combinations_with_replacement
-import re
+from itertools import permutations
 
-tileSetSize = 4 # Specifies the size of the tileset
+tileSetSize = 3
+ops = ['+', '-', '*', '/']
+equations = []
 
 class StoreNumber:
     def __init__(self):
@@ -20,74 +21,105 @@ class Calculations:
     def __init__(self):
         pass
 
-    def rpn(self, variables):
-        ops = ['+', '-', '*', '/']
-        opnumber = tileSetSize-2
-        equations = []
-        i = 0
-        invalid = 0
+    def rpn(self, equation_list: list, var_stack: list, available_ops: set, current_eq_stack: list, ops_needed: int = -1):
+        if not ops_needed and not var_stack: # if ops_needed != 0 and len(var_stack) > 0
+                equation_list.append(tuple(current_eq_stack))
+                
+        if ops_needed > 0:
+            for op in available_ops:
+                current_eq_stack.append(op)
+                self.rpn(equation_list, var_stack, available_ops, current_eq_stack, ops_needed - 1)
+                current_eq_stack.pop()
 
-        for n1, n2, *nums in permutations(variables):
-            nums += ["%s"] * opnumber
-            for p in {*permutations(nums)}:
-                for operators in product(ops, repeat = opnumber):
-                    for last in ops:
-                        equations.append((" ".join((n1, n2, *p, last)) % operators))
-
-        print("Total Equations: " + str(len(equations)))
-
-        #### Postfix must be n numbers in a row then n-1 ops in a row ####
-        while i < 1:
-            eq = (equations[i]).split()
-            stack = []
-            sm = 0
-            print(equations[i])
-            for term in eq:
+        if var_stack:
+            var = var_stack.pop()
+            current_eq_stack.append(var)
+            self.rpn(equation_list, var_stack, available_ops, current_eq_stack, ops_needed + 1)
+            current_eq_stack.pop()
+            var_stack.append(var)
+    
+    def calculate(self, equation):
+        stack = []
+        dupeIntEq = set()
+        dupeSum = set()
+        eqCalc = set()
+        # print(equation)
+ 
+        for aqua in equation:
+            for term in aqua:
                 if term.isdigit():
                     stack.insert(0, int(term))
                 else:
-                    try:
-                        sm = (f'{stack.pop(1)} {term} {stack.pop(0)}') # Generates an equation based on the stack i.e. 1 + 2 (where stack is 1 2 +)
-                    except IndexError:
-                        invalid += 1
-                        break
+                    eq = (f'{stack.pop(1)} {term} {stack.pop(0)}') # Generates an equation based on the stack i.e. 1 + 2 (where stack is 1 2 +)
+                    a = eq.split()
 
-                    divide_multiply = sm.split()
-                    
-                    # If the equation is divided/multiplied by one, skip evaluating i.e. 2*1 = 2 or 2/1 = 2
-                    if (divide_multiply[1] == '/' and divide_multiply[2] == 1) or (divide_multiply[1] == '*' and divide_multiply[2] == 1):
-                        stack.insert(0, divide_multiply[0])
-                        break
-
-                    exp = eval(sm)                   
-                        
-                    if exp > 0 and float(exp).is_integer(): # Checks if the equation is greater than 0 and is a whole number
-                        stack.insert(0, exp) # Inserts result back into the stack
+                    if (term == '/' and a[2] == 1) or (term == '*' and a[2] == 1): # x / 1 and x * 1
+                        stack.insert(0, a[0])
+                    elif (term == '/' and a[0] == 1) or (term == '*' and a[0] == 1): # 1 * x and 1 / x
+                        stack.insert(0, a[2])
                     else:
-                        invalid += 1
-                        break
-            i += 1
-            stack.clear() # Wipes the stack so the next RPN can be done
-        
-        print("Invalid Equations: " + str(invalid))
+                        exp = eval(eq)
+                        
+                        if exp > 0 and float(exp).is_integer(): # Checks if the equation is greater than 0 and is a whole number
+                            if (str(a) in dupeIntEq):
+                                stack.insert(0, int(exp)) # Inserts result back into the stack
+                            else:
+                                if (term == '+') or (term == '*'): # Deals with commutative equations
+                                    a.sort()
+                                dupeIntEq.add(str(a)) # Add intermidiate equation to set
+                                
+                                if int(exp) in dupeSum:
+                                    pass
+                                else:
+                                    if 100 < exp < 999:
+                                        eqCalc.add(int(exp))
+                                        print(exp)
+                                    dupeSum.add(int(exp))
+
+                                stack.insert(0, int(exp))
+                        else:
+                            break
+                        
+# Why am I getting this output?
+# 184
+# 108
+# 106
+# 110
+# 216
+# 800
+# 798
+# 400.0
+# 802
+# 600
+# 104
+# 116
+# 784
+# 102
+# 816
+# 200
+# 208
+# 192
+# ['2', '8', '100']
+
 
 def main():
     sn = StoreNumber()
     i = 0
     k = 0
+
     while i < 1: # Determines the number of tilesets
         sn.tiles()
         i += 1
 
-    print("Final equations:")
-
     while k < len(sn.printSet()):
         calculations = Calculations()
-        calculations.rpn(map(str, list(sn.printSet())[k]))
+        variables = [str(x) for x in list(sn.printSet())[k]]
+        a = list(variables)
+        for variable_permutation in permutations(variables):
+            calculations.rpn(equations, list(variable_permutation), set(ops), [])
+        calculations.calculate(equations)
+        print(a)
         k += 1
-    
-    print("Tilesets: " + str(list(sn.printSet())))
-    print("Number of tilesets: " + str(i))
-    
+   
 if __name__ == "__main__":
     main()

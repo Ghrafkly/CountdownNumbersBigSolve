@@ -4,6 +4,7 @@ from itertools import permutations
 tileSetSize = 3
 ops = ['+', '-', '*', '/']
 equations = []
+eqCalc = list()
 
 class StoreNumber:
     def __init__(self):
@@ -42,8 +43,6 @@ class Calculations:
         stack = []
         dupeIntEq = set()
         dupeSum = set()
-        eqCalc = set()
-        # print(equation)
  
         for aqua in equation:
             for term in aqua:
@@ -59,7 +58,7 @@ class Calculations:
                         stack.insert(0, a[2])
                     else:
                         exp = eval(eq)
-                        
+
                         if exp > 0 and float(exp).is_integer(): # Checks if the equation is greater than 0 and is a whole number
                             if (str(a) in dupeIntEq):
                                 stack.insert(0, int(exp)) # Inserts result back into the stack
@@ -68,42 +67,45 @@ class Calculations:
                                     a.sort()
                                 dupeIntEq.add(str(a)) # Add intermidiate equation to set
                                 
-                                if int(exp) in dupeSum:
+                                if exp in dupeSum:
                                     pass
                                 else:
                                     if 100 < exp < 999:
-                                        eqCalc.add(int(exp))
-                                        print(exp)
-                                    dupeSum.add(int(exp))
+                                        eqCalc.append(int(exp))
+                                        
+                                        # deal with partial summs
 
-                                stack.insert(0, int(exp))
+
+                                    dupeSum.add(exp)
+
+                                stack.insert(0, exp)
                         else:
                             break
                         
-# Why am I getting this output?
-# 184
-# 108
-# 106
-# 110
-# 216
-# 800
-# 798
-# 400.0
-# 802
-# 600
-# 104
-# 116
-# 784
-# 102
-# 816
-# 200
-# 208
-# 192
-# ['2', '8', '100']
+                        # if exp > 0 and float(exp).is_integer(): # Checks if the equation is greater than 0 and is a whole number                          
+                        #     if exp in dupeSum:
+                        #         pass
+                        #     else:
+                        #         if 100 < exp < 999:
+                        #             eqCalc.append(int(exp))
+                        #         dupeSum.add(exp)
+                        #         # print(dupeSum)
+                        #     stack.insert(0, exp)
+                        # else:
+                        #     break
+        equation.clear()
+        return(eqCalc)
 
+class NumSolutions:
+    def __init__(self):
+        pass
 
+    def counter(self, sums):
+        print(sums)
+                       
 def main():
     sn = StoreNumber()
+    ns = NumSolutions()
     i = 0
     k = 0
 
@@ -113,13 +115,14 @@ def main():
 
     while k < len(sn.printSet()):
         calculations = Calculations()
-        variables = [str(x) for x in list(sn.printSet())[k]]
-        a = list(variables)
+        # variables = [str(x) for x in list(sn.printSet())[k]]
+        # print(variables)
+        variables = ['25', '100', '75', '50']
         for variable_permutation in permutations(variables):
             calculations.rpn(equations, list(variable_permutation), set(ops), [])
-        calculations.calculate(equations)
-        print(a)
+        result = calculations.calculate(equations)
         k += 1
+    ns.counter(sorted(result))
    
 if __name__ == "__main__":
     main()

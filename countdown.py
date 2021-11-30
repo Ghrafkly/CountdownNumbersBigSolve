@@ -114,12 +114,6 @@ def main():
         result = calculations.calculate(equations)
 
     ns.counter(sorted(result))
-    print(f'Total Number Sets: {len(dupeNumSet)}')
-    for key in dict.keys():
-        print(key, dict[key])
-    
-    for key in dict.keys():
-        print(key, dict[key])
     
     with open('numbers.csv', 'w') as file:
         for key in dict.keys():

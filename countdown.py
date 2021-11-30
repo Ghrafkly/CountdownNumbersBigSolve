@@ -2,9 +2,8 @@ from itertools import permutations, combinations
 
 numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
 ops = ['+', '-', '*', '/']
-tileSetSize = 6 # Change this unless you have a v. powerful computer
+tileSetSize = 4 # Change this unless you have a v. powerful computer
 equations = []
-eqCalc = []
 dupeNumSet = set()
 
 dict = {}
@@ -17,9 +16,8 @@ class StoreNumber:
     def __init__(self):
         pass
 
-    def tiles(self):
-        # Sort the generated list then add to set. This avoids numbersets that have the same numbers but different order.
-        n = sorted(combinations(numbers, tileSetSize))
+    def tiles(self): # Sort the generated list then add to set. This avoids numbersets that have the same numbers but different order.
+        n = sorted(combinations(numbers, tileSetSize)) # sorted() and .sort() work just as fast here as it is early in the code
         for item in n:
             dupeNumSet.add(item)
 
@@ -56,7 +54,6 @@ class Calculations:
                 else:
                     sm = stack.pop(-1), stack.pop(-1), term
                     smList = [str(int) for int in sm]
-
                     if (term == '/' and sm[1] == 1) or (term == '*' and sm[1] == 1): # x / 1 and x * 1
                         stack.insert(0, sm[0])
                     elif (term == '/' and sm[0] == 1) or (term == '*' and sm[0] == 1): # 1 * x and 1 / x
@@ -67,16 +64,13 @@ class Calculations:
                             a = tuple(sorted(smList))
                             if a not in dupeParEq:
                                 if 100 < exp < 1000:
-                                    eqCalc.append(int(exp))
+                                    dict[exp] += 1
                                 dupeParEq.add(a)
-                            stack.insert(0, int(exp))
+                            stack.insert(0, exp)
                         else:
                             break
-                        # if (term == '+') or (term == '*'):
-                        #         a = tuple(sorted(smList))
             stack.clear() # Reset stack for next intermediate equation
         equation.clear() # Reset equation for next equation set
-        return(eqCalc)
     
     def equate(self, a: int, b: int, term: str): # Faster than eval() ¯\_(ツ)_/¯
         c = 0
@@ -93,27 +87,20 @@ class Calculations:
             return(int(c))
         else:
             return('skip')
-
-class NumSolutions:
-    def __init__(self):
-        pass
-
-    def counter(self, sums):
-        for s in sums:
-            dict[s] += 1
                        
 def main():
     sn = StoreNumber()
-    ns = NumSolutions()
+    ds = set()
     sn.tiles() # Generates master list of equations. Stored in dupeNumSet
+
 
     for item in dupeNumSet:
         calculations = Calculations()
         for variable_permutation in permutations(item):
-            calculations.rpn(equations, list(variable_permutation), set(ops), [])
-        result = calculations.calculate(equations)
-
-    ns.counter(sorted(result))
+            if variable_permutation not in ds:
+                calculations.rpn(equations, list(variable_permutation), set(ops), [])
+                ds.add(variable_permutation)
+        calculations.calculate(equations)
     
     with open('numbers.csv', 'w') as file:
         for key in dict.keys():

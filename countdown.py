@@ -1,22 +1,27 @@
-import numpy as np
-from itertools import permutations
+from itertools import permutations, combinations
 
-tileSetSize = 3
+numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
 ops = ['+', '-', '*', '/']
+tileSetSize = 6 # Change this unless you have a v. powerful computer
 equations = []
-eqCalc = list()
+eqCalc = []
+dupeNumSet = set()
+
+dict = {}
+keys = range(101, 1000, 1)
+
+for i in keys:
+    dict[i] = 0
 
 class StoreNumber:
     def __init__(self):
-        self.setOf = set()
+        pass
 
     def tiles(self):
-        numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
-        numbers_6 = list(np.random.choice(numbers, size=tileSetSize, replace = False)) # Generate how many numbers per tile/numberset
-        self.setOf.add(tuple(sorted(numbers_6))) # Sort the generated list then add to set. This avoids numbersets that have the same numbers but different order.
-
-    def printSet(self):
-        return self.setOf
+        # Sort the generated list then add to set. This avoids numbersets that have the same numbers but different order.
+        n = sorted(combinations(numbers, tileSetSize))
+        for item in n:
+            dupeNumSet.add(item)
 
 class Calculations:
     def __init__(self):
@@ -39,90 +44,86 @@ class Calculations:
             current_eq_stack.pop()
             var_stack.append(var)
     
-    def calculate(self, equation):
+    def calculate(self, equation: list):
         stack = []
-        dupeIntEq = set()
-        dupeSum = set()
- 
+        dupeParEq = set()
+
         for aqua in equation:
-            for term in aqua:
+            eq = [str(int) for int in aqua]
+            for term in eq:
                 if term.isdigit():
                     stack.insert(0, int(term))
                 else:
-                    eq = (f'{stack.pop(1)} {term} {stack.pop(0)}') # Generates an equation based on the stack i.e. 1 + 2 (where stack is 1 2 +)
-                    a = eq.split()
+                    sm = stack.pop(-1), stack.pop(-1), term
+                    smList = [str(int) for int in sm]
 
-                    if (term == '/' and a[2] == 1) or (term == '*' and a[2] == 1): # x / 1 and x * 1
-                        stack.insert(0, a[0])
-                    elif (term == '/' and a[0] == 1) or (term == '*' and a[0] == 1): # 1 * x and 1 / x
-                        stack.insert(0, a[2])
+                    if (term == '/' and sm[1] == 1) or (term == '*' and sm[1] == 1): # x / 1 and x * 1
+                        stack.insert(0, sm[0])
+                    elif (term == '/' and sm[0] == 1) or (term == '*' and sm[0] == 1): # 1 * x and 1 / x
+                        stack.insert(0, sm[1])
                     else:
-                        exp = eval(eq)
-
-                        if exp > 0 and float(exp).is_integer(): # Checks if the equation is greater than 0 and is a whole number
-                            if (str(a) in dupeIntEq):
-                                stack.insert(0, int(exp)) # Inserts result back into the stack
-                            else:
-                                if (term == '+') or (term == '*'): # Deals with commutative equations
-                                    a.sort()
-                                dupeIntEq.add(str(a)) # Add intermidiate equation to set
-                                
-                                if exp in dupeSum:
-                                    pass
-                                else:
-                                    if 100 < exp < 999:
-                                        eqCalc.append(int(exp))
-                                        
-                                        # deal with partial summs
-
-
-                                    dupeSum.add(exp)
-
-                                stack.insert(0, exp)
+                        exp = self.equate(sm[0], sm[1], term)
+                        if exp != 'skip':
+                            a = tuple(sorted(smList))
+                            if a not in dupeParEq:
+                                if 100 < exp < 1000:
+                                    eqCalc.append(int(exp))
+                                dupeParEq.add(a)
+                            stack.insert(0, int(exp))
                         else:
                             break
-                        
-                        # if exp > 0 and float(exp).is_integer(): # Checks if the equation is greater than 0 and is a whole number                          
-                        #     if exp in dupeSum:
-                        #         pass
-                        #     else:
-                        #         if 100 < exp < 999:
-                        #             eqCalc.append(int(exp))
-                        #         dupeSum.add(exp)
-                        #         # print(dupeSum)
-                        #     stack.insert(0, exp)
-                        # else:
-                        #     break
-        equation.clear()
+                        # if (term == '+') or (term == '*'):
+                        #         a = tuple(sorted(smList))
+            stack.clear() # Reset stack for next intermediate equation
+        equation.clear() # Reset equation for next equation set
         return(eqCalc)
+    
+    def equate(self, a: int, b: int, term: str): # Faster than eval() ¯\_(ツ)_/¯
+        c = 0
+        if term == '+':
+            c = a+b
+        elif term == '*':
+            c = a*b
+        elif term == '-':
+            c = a-b
+        elif term == '/':
+            c = a/b
+
+        if (float(c).is_integer()) and (c > 0): # At all stages the sum needs to be greater than 0 and an integer
+            return(int(c))
+        else:
+            return('skip')
 
 class NumSolutions:
     def __init__(self):
         pass
 
     def counter(self, sums):
-        print(sums)
+        for s in sums:
+            dict[s] += 1
                        
 def main():
     sn = StoreNumber()
     ns = NumSolutions()
-    i = 0
-    k = 0
+    sn.tiles() # Generates master list of equations. Stored in dupeNumSet
 
-    while i < 1: # Determines the number of tilesets
-        sn.tiles()
-        i += 1
-
-    while k < len(sn.printSet()):
+    for item in dupeNumSet:
         calculations = Calculations()
-        # variables = [str(x) for x in list(sn.printSet())[k]]
-        # print(variables)
-        variables = ['25', '100', '75', '50']
-        for variable_permutation in permutations(variables):
+        for variable_permutation in permutations(item):
             calculations.rpn(equations, list(variable_permutation), set(ops), [])
         result = calculations.calculate(equations)
-        k += 1
+
     ns.counter(sorted(result))
-   
+    print(f'Total Number Sets: {len(dupeNumSet)}')
+    for key in dict.keys():
+        print(key, dict[key])
+    
+    for key in dict.keys():
+        print(key, dict[key])
+    
+    with open('numbers.csv', 'w') as file:
+        for key in dict.keys():
+            file.write(str(key) + "," + str(dict[key]) + '\n')
+    
 if __name__ == "__main__":
     main()

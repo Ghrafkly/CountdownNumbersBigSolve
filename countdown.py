@@ -93,11 +93,10 @@ def main():
     ds = set()
     sn.tiles() # Generates master list of equations. Stored in dupeNumSet
 
-
     for item in dupeNumSet:
         calculations = Calculations()
         for variable_permutation in permutations(item):
-            if variable_permutation not in ds:
+            if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.
                 calculations.rpn(equations, list(variable_permutation), set(ops), [])
                 ds.add(variable_permutation)
         calculations.calculate(equations)

@@ -15,8 +15,8 @@ class Calculations:
 
     def rpn(self, equation_list: list, var_stack: list, available_ops: set, current_eq_stack: list, ops_needed: int = -1):
         if not ops_needed and not var_stack: # if ops_needed != 0 and len(var_stack) > 0
-                equation_list.append(tuple(current_eq_stack))
-                
+            equation_list.append(tuple(current_eq_stack))
+
         if ops_needed > 0:
             for op in available_ops:
                 current_eq_stack.append(op)
@@ -43,9 +43,9 @@ class Calculations:
                     smList = [str(int) for int in sm]
 
                     match sm:
-                        case [1, _, '/'|'*']:
+                        case [1, _, '/'|'*']: # 1 / or * x
                             stack.insert(0, sm[1])
-                        case [_, 1, '/'|'*']:
+                        case [_, 1, '/'|'*']: # x / or * 1
                             stack.insert(0, sm[0])
                         case _:
                             exp = self.equate(sm[0], sm[1], term)
@@ -85,7 +85,6 @@ def main():
     sn = StoreNumber()
     ds = set()
     sn.tiles() # Generates master list of equations. Stored in dupeNumSet
-
     
     for item in dupeNumSet:
         calculations = Calculations()
@@ -102,7 +101,7 @@ def main():
 if __name__ == "__main__":
     numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
     ops = ['+', '-', '*', '/']
-    tileSetSize = 3 # Change this unless you have a v. powerful computer
+    tileSetSize = 4 # Change this unless you have a v. powerful computer
     equations = []
     dupeNumSet = set()
 

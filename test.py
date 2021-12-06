@@ -1,21 +1,12 @@
-from itertools import permutations, combinations
+c = 7 % 1 # 0
+d = 3 % 1 # 0
+e = 27.0 % 1 # 0.0
+f = 27.4 % 1 # 0.0
+g = 27.23456 % 1 # > 0
 
-numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
-ds = set()
-ls = set()
-i = 0
+print(f'{c} \n{d} \n{e} \n{f} \n{g}')
 
-# n = list(combinations(numbers, 6))
-# n.sort()
-n = sorted(combinations(numbers, 6))
-for item in n:
-    ds.add(item)
 
-for eq in ds:
-    for var in permutations(eq):
-        if var not in ls:
-            ls.add(var)
-        i += 1
 
-print(f'Without dupes: {len(ls)}')
-print(f'        Total: {i}')
+
+

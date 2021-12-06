@@ -1,17 +1,5 @@
 from itertools import permutations, combinations
 
-numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
-ops = ['+', '-', '*', '/']
-tileSetSize = 4 # Change this unless you have a v. powerful computer
-equations = []
-dupeNumSet = set()
-
-dict = {}
-keys = range(101, 1000, 1)
-
-for i in keys:
-    dict[i] = 0
-
 class StoreNumber:
     def __init__(self):
         pass
@@ -45,45 +33,50 @@ class Calculations:
     def calculate(self, equation: list):
         stack = []
         dupeParEq = set()
-
-        for aqua in equation:
-            eq = [str(int) for int in aqua]
-            for term in eq:
-                if term.isdigit():
+        
+        for aqua in equation: # equation = [(75, 10, '+', 7, '+'), (75, 10, '+', 7, '-'), (75, 10, '+', 7, '*')...]
+            for term in aqua:
+                if type(term) == int:
                     stack.insert(0, int(term))
                 else:
-                    sm = stack.pop(-1), stack.pop(-1), term
+                    sm = [stack.pop(-1), stack.pop(-1), term]
                     smList = [str(int) for int in sm]
-                    if (term == '/' and sm[1] == 1) or (term == '*' and sm[1] == 1): # x / 1 and x * 1
-                        stack.insert(0, sm[0])
-                    elif (term == '/' and sm[0] == 1) or (term == '*' and sm[0] == 1): # 1 * x and 1 / x
-                        stack.insert(0, sm[1])
-                    else:
-                        exp = self.equate(sm[0], sm[1], term)
-                        if exp != 'skip':
-                            a = tuple(sorted(smList))
-                            if a not in dupeParEq:
-                                if 100 < exp < 1000:
-                                    dict[exp] += 1
-                                dupeParEq.add(a)
-                            stack.insert(0, exp)
-                        else:
-                            break
+
+                    match sm:
+                        case [1, _, '/'|'*']:
+                            stack.insert(0, sm[1])
+                        case [_, 1, '/'|'*']:
+                            stack.insert(0, sm[0])
+                        case _:
+                            exp = self.equate(sm[0], sm[1], term)
+ 
+                            match exp:
+                                case 'skip':
+                                    break
+                                case _:
+                                    a = tuple(sorted(smList))
+                                    if a not in dupeParEq:
+                                        if 100 < exp < 1000: ####### Check out match statements
+                                            dict[exp] += 1
+                                        dupeParEq.add(a)
+                                    stack.insert(0, exp)
+
             stack.clear() # Reset stack for next intermediate equation
         equation.clear() # Reset equation for next equation set
     
     def equate(self, a: int, b: int, term: str): # Faster than eval() ¯\_(ツ)_/¯
         c = 0
-        if term == '+':
-            c = a+b
-        elif term == '*':
-            c = a*b
-        elif term == '-':
-            c = a-b
-        elif term == '/':
-            c = a/b
+        match term:
+            case '+':
+                c = a+b
+            case '*':
+                c = a*b
+            case '-':
+                c = a-b
+            case '/':
+                c = a/b
 
-        if (float(c).is_integer()) and (c > 0): # At all stages the sum needs to be greater than 0 and an integer
+        if ((c%1) == 0) and (c > 0): # At all stages the sum needs to be greater than 0 and an integer
             return(int(c))
         else:
             return('skip')
@@ -93,17 +86,29 @@ def main():
     ds = set()
     sn.tiles() # Generates master list of equations. Stored in dupeNumSet
 
+    
     for item in dupeNumSet:
         calculations = Calculations()
         for variable_permutation in permutations(item):
-            if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.
+            if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.               
                 calculations.rpn(equations, list(variable_permutation), set(ops), [])
                 ds.add(variable_permutation)
         calculations.calculate(equations)
-    
+        
     with open('numbers.csv', 'w') as file:
         for key in dict.keys():
-            file.write(str(key) + "," + str(dict[key]) + '\n')
+            file.write(str(key) + "," + str(dict[key]) + '\n') # 137, 249
     
 if __name__ == "__main__":
+    numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
+    ops = ['+', '-', '*', '/']
+    tileSetSize = 3 # Change this unless you have a v. powerful computer
+    equations = []
+    dupeNumSet = set()
+
+    dict = {}
+    keys = range(101, 1000, 1)
+
+    for i in keys:
+        dict[i] = 0
     main()

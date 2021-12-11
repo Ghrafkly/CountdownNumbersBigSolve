@@ -1,13 +1,5 @@
 from itertools import permutations, combinations
-
-class StoreNumber:
-    def __init__(self):
-        pass
-
-    def tiles(self): # Sort the generated list then add to set. This avoids numbersets that have the same numbers but different order.
-        n = sorted(combinations(numbers, tileSetSize)) # sorted() and .sort() work just as fast here as it is early in the code
-        for item in n:
-            dupeNumSet.add(item)
+import time
 
 class Calculations:
     def __init__(self):
@@ -82,21 +74,26 @@ class Calculations:
             return('skip')
                        
 def main():
-    sn = StoreNumber()
     ds = set()
-    sn.tiles() # Generates master list of equations. Stored in dupeNumSet
-    
+    n = sorted(combinations(numbers, tileSetSize)) # sorted() and .sort() work just as fast here as it is early in the code
+    for item in n:
+        dupeNumSet.add(item)
+
+    start = time.perf_counter()
     for item in dupeNumSet:
         calculations = Calculations()
         for variable_permutation in permutations(item):
-            if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.               
+            if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.           
                 calculations.rpn(equations, list(variable_permutation), set(ops), [])
                 ds.add(variable_permutation)
         calculations.calculate(equations)
+    finish = time.perf_counter()
+
+    print(f'Finished in {round(finish-start, 2)} second(s)')
         
     with open('numbers.csv', 'w') as file:
         for key in dict.keys():
-            file.write(str(key) + "," + str(dict[key]) + '\n') # 137, 249
+            file.write(str(key) + "," + str(dict[key]) + '\n')
     
 if __name__ == "__main__":
     numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules

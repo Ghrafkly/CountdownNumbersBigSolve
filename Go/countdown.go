@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-
+	// "sort"
 	"github.com/ernestosuarez/itertools"
 )
 
@@ -12,8 +12,9 @@ func main() {
 	var s [][]int
 	allKeys := make(map[[2]int]bool)
 
-	list := itertools.CombinationsInt(number, 2)
+	list := itertools.CombinationsInt(number, 6)
 	for item := range list {
+		fmt.Printf("%v\n", item)
 		if _, value := allKeys[item]; !value {
 			allKeys[item] = true
 			s = append(s, [][]int{item}...)
@@ -21,18 +22,7 @@ func main() {
 	}
 
 	// var dupe = duplicate(s)
-	fmt.Printf("S: %v\n", len(s))
+	// fmt.Printf("S: %v\n", len(s))
 	// fmt.Printf("D: %v\n", len(dupe))
 
 }
-
-// func duplicate(arr [][]int) [][]int {
-// 	var result [][]int
-
-// 	for _, e := range arr {
-// 		fmt.Println(e)
-// 		result = append(result, [][]int{e}...)
-// 	}
-
-// 	return result
-// }

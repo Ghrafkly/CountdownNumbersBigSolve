@@ -78,7 +78,7 @@ def main():
     n = sorted(combinations(numbers, tileSetSize)) # sorted() and .sort() work just as fast here as it is early in the code
     for item in n:
         dupeNumSet.add(item)
-
+    i = 0
     print(len(dupeNumSet))
     for item in dupeNumSet:
         start = time.perf_counter()
@@ -86,12 +86,13 @@ def main():
         calculations = Calculations()
         for variable_permutation in permutations(item):
             if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.           
+                i += 1
                 calculations.rpn(equations, list(variable_permutation), set(ops), []) # 0.02s @ 6 numbers
                 ds.add(variable_permutation)
         calculations.calculate(equations)
         finish = time.perf_counter()
         # print(f'Finished Calculating in {round(finish-start, 4)} second(s) \n')
-
+    print(i)
         
     with open('numbers.csv', 'w') as file:
         for key in dict.keys():

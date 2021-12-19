@@ -25,7 +25,7 @@ class Calculations:
     def calculate(self, equation: list):
         stack = []
         dupeParEq = set()
-        
+        # print(f'{equation} \n')
         for aqua in equation: # equation = [(75, 10, '+', 7, '+'), (75, 10, '+', 7, '-'), (75, 10, '+', 7, '*')...]
             for term in aqua:
                 if type(term) == int:
@@ -48,7 +48,7 @@ class Calculations:
                                 case _:
                                     a = tuple(sorted(smList))
                                     if a not in dupeParEq:
-                                        if 100 < exp < 1000: ####### Check out match statements
+                                        if 100 < exp < 1000:
                                             dict[exp] += 1
                                         dupeParEq.add(a)
                                     stack.insert(0, exp)
@@ -56,7 +56,7 @@ class Calculations:
             stack.clear() # Reset stack for next intermediate equation
         equation.clear() # Reset equation for next equation set
     
-    def equate(self, a: int, b: int, term: str): # Faster than eval() ¯\_(ツ)_/¯
+    def equate(self, a: int, b: int, term: str):
         c = 0
         match term:
             case '+':
@@ -79,17 +79,19 @@ def main():
     for item in n:
         dupeNumSet.add(item)
 
-    start = time.perf_counter()
+    print(len(dupeNumSet))
     for item in dupeNumSet:
+        start = time.perf_counter()
+        # print(f'Calculating {item}')
         calculations = Calculations()
         for variable_permutation in permutations(item):
             if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.           
-                calculations.rpn(equations, list(variable_permutation), set(ops), [])
+                calculations.rpn(equations, list(variable_permutation), set(ops), []) # 0.02s @ 6 numbers
                 ds.add(variable_permutation)
         calculations.calculate(equations)
-    finish = time.perf_counter()
+        finish = time.perf_counter()
+        # print(f'Finished Calculating in {round(finish-start, 4)} second(s) \n')
 
-    print(f'Finished in {round(finish-start, 2)} second(s)')
         
     with open('numbers.csv', 'w') as file:
         for key in dict.keys():

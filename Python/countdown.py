@@ -1,5 +1,4 @@
 from itertools import permutations, combinations
-import time
 
 class Calculations:
     def __init__(self):
@@ -25,7 +24,6 @@ class Calculations:
     def calculate(self, equation: list):
         stack = []
         dupeParEq = set()
-        # print(f'{equation} \n')
         for aqua in equation: # equation = [(75, 10, '+', 7, '+'), (75, 10, '+', 7, '-'), (75, 10, '+', 7, '*')...]
             for term in aqua:
                 if type(term) == int:
@@ -76,32 +74,29 @@ class Calculations:
 def main():
     ds = set()
     n = sorted(combinations(numbers, tileSetSize)) # sorted() and .sort() work just as fast here as it is early in the code
+    
     for item in n:
         dupeNumSet.add(item)
-    i = 0
-    print(len(dupeNumSet))
+
     for item in dupeNumSet:
-        start = time.perf_counter()
-        # print(f'Calculating {item}')
         calculations = Calculations()
         for variable_permutation in permutations(item):
             if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.           
-                i += 1
                 calculations.rpn(equations, list(variable_permutation), set(ops), []) # 0.02s @ 6 numbers
                 ds.add(variable_permutation)
-        calculations.calculate(equations)
-        finish = time.perf_counter()
-        # print(f'Finished Calculating in {round(finish-start, 4)} second(s) \n')
-    print(i)
+        # calculations.calculate(equations)
+
+    print(len(equations))
         
     with open('numbers.csv', 'w') as file:
         for key in dict.keys():
             file.write(str(key) + "," + str(dict[key]) + '\n')
     
 if __name__ == "__main__":
-    numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
+    # numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
+    numbers = [5,10,25] # All the numbers in the Countdown rules
     ops = ['+', '-', '*', '/']
-    tileSetSize = 4 # Change this unless you have a v. powerful computer
+    tileSetSize = 3 # Change this unless you have a v. powerful computer
     equations = []
     dupeNumSet = set()
 

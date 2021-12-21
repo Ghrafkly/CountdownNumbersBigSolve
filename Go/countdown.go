@@ -10,7 +10,8 @@ import (
 	"github.com/ernestosuarez/itertools"
 )
 
-var equations = NewEmptyStack()
+// var equations = NewEmptyStack()
+var equations []*Stack
 
 func main() {
 	var operators = []string{"+", "-", "*", "/"}
@@ -57,22 +58,19 @@ func main() {
 			}
 
 			current := NewEmptyStack()
+			fmt.Printf("Numbers: %v\n", pStack)
 			rpn(pStack, operators, current, ops_needed)
 		}
 	}
 }
 
 func rpn(nums *Stack, ops []string, current *Stack, ops_needed int) {
-	var s []string
 
 	if ops_needed == 0 && nums.Size() == 0 {
-		for i := 0; i < current.Size(); i++ {
-			v := current.Pop()
-			s = append(s, v)
-			fmt.Printf("T: %T, Values: %v\n", v, v)
+		for i := 0; i < 5; i++ {
+			fmt.Printf("Current Length: %v\n", current.Size())
+			current.Pop()
 		}
-
-		equations.Push(current)
 	}
 
 	if ops_needed > 0 {

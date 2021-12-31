@@ -3,15 +3,13 @@ package main
 import (
 	"fmt"
 	"strings"
-	"sync"
 
 	// https://pkg.go.dev/github.com/karrick/gorpn#ErrBadBindingType
 	// https://github.com/karrick/gorpn
 	"github.com/ernestosuarez/itertools"
 )
 
-// var equations = NewEmptyStack()
-var equations []*Stack
+var equations [][]string
 
 func main() {
 	var operators = []string{"+", "-", "*", "/"}
@@ -52,114 +50,37 @@ func main() {
 		}
 
 		for _, item := range pNums {
-			pStack := NewEmptyStack()
-			for _, v := range item {
-				pStack.Push(v)
-			}
-
-			current := NewEmptyStack()
-			fmt.Printf("Numbers: %v\n", pStack)
-			rpn(pStack, operators, current, ops_needed)
+			var current []string
+			rpn(item, operators, current, ops_needed)
+			fmt.Printf("Equations: %v\n", equations)
 		}
 	}
 }
 
-func rpn(nums *Stack, ops []string, current *Stack, ops_needed int) {
-
-	if ops_needed == 0 && nums.Size() == 0 {
-		for i := 0; i < 5; i++ {
-			fmt.Printf("Current Length: %v\n", current.Size())
-			current.Pop()
-		}
+func rpn(nums []string, ops []string, current []string, ops_needed int) {
+	if ops_needed == 0 && len(nums) == 0 {
+		fmt.Printf("Current: %v\n", current)
+		equations = append(equations, [][]string{current}...)
 	}
 
 	if ops_needed > 0 {
 		for _, op := range ops {
-			current.Push(op)
+			current = append(current, op)
 			rpn(nums, ops, current, ops_needed-1)
-			current.Pop()
+			current = current[:len(current)-1]
 		}
 	}
 
-	if nums.Size() != 0 {
-		v := nums.Pop()
-		current.Push(v)
+	if len(nums) > 0 {
+		v := nums[len(nums)-1]
+		nums = nums[:len(nums)-1]
+		current = append(current, v)
 		rpn(nums, ops, current, ops_needed+1)
-		current.Pop()
-		nums.Push(v)
+		current = current[:len(current)-1]
+		nums = append(nums, v)
 	}
 }
 
-// Item interface to store any data type in stack
-type Item interface{}
-
-// Stack struct which contains a list of Items
-type Stack struct {
-	items []Item
-	mutex sync.Mutex
-}
-
-// NewEmptyStack() returns a new instance of Stack with zero elements
-func NewEmptyStack() *Stack {
-	return &Stack{
-		items: nil,
-	}
-}
-
-// NewStack() returns a new instance of Stack with list of specified elements
-func NewStack(items []Item) *Stack {
-	return &Stack{
-		items: items,
-	}
-}
-
-// Push() adds new item to top of existing/empty stack
-func (stack *Stack) Push(item Item) {
-	stack.mutex.Lock()
-	defer stack.mutex.Unlock()
-
-	stack.items = append(stack.items, item)
-}
-
-// Pop() removes most recent item(top) from stack
-func (stack *Stack) Pop() Item {
-	stack.mutex.Lock()
-	defer stack.mutex.Unlock()
-
-	if len(stack.items) == 0 {
-		return nil
-	}
-
-	lastItem := stack.items[len(stack.items)-1]
-	stack.items = stack.items[:len(stack.items)-1]
-
-	return lastItem
-}
-
-// Size() returns the number of items currently in the stack
-func (stack *Stack) Size() int {
-	stack.mutex.Lock()
-	defer stack.mutex.Unlock()
-
-	return len(stack.items)
-}
-
-// Top() returns the last inserted item in stack without removing it.
-func (stack *Stack) Top() Item {
-	stack.mutex.Lock()
-	defer stack.mutex.Unlock()
-
-	if len(stack.items) == 0 {
-		return nil
-	}
-
-	return stack.items[len(stack.items)-1]
-}
-
-// IsEmpty() returns whether the stack is empty or not (boolean result)
-func (stack *Stack) IsEmpty() bool {
-	stack.mutex.Lock()
-	defer stack.mutex.Unlock()
-
-	return len(stack.items) == 0
-}
+// a := nums[len(nums)-1]  // Save pop value
+// b := nums[:len(nums)-1] // Pop last element
+// b = append(b, a) // Push element

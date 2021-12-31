@@ -1,4 +1,5 @@
 from itertools import permutations, combinations
+import time
 
 class Calculations:
     def __init__(self):
@@ -84,17 +85,16 @@ def main():
             if variable_permutation not in ds: # 1,1,2 and 1,1,2 are valid. This stops that.           
                 calculations.rpn(equations, list(variable_permutation), set(ops), []) # 0.02s @ 6 numbers
                 ds.add(variable_permutation)
-        # calculations.calculate(equations)
+        calculations.calculate(equations)
+        equations.clear()
 
-    print(len(equations))
-        
     with open('numbers.csv', 'w') as file:
         for key in dict.keys():
             file.write(str(key) + "," + str(dict[key]) + '\n')
     
 if __name__ == "__main__":
-    # numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
-    numbers = [5,10,25] # All the numbers in the Countdown rules
+    numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
+    # numbers = [5,10,25,50] # All the numbers in the Countdown rules
     ops = ['+', '-', '*', '/']
     tileSetSize = 3 # Change this unless you have a v. powerful computer
     equations = []
@@ -105,4 +105,8 @@ if __name__ == "__main__":
 
     for i in keys:
         dict[i] = 0
+
+    start = time.perf_counter()
     main()
+    finish = time.perf_counter()
+    print(f'Time taken: {round(finish-start, 2)}')

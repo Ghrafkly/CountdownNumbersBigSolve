@@ -1,2 +1,4 @@
 github.com/ernestosuarez/itertools v0.0.0-20190516153236-40a02c159e7b h1:jfqcM/m7Rt6wR6caX7TaRk5tHWCz5HRq+kNCPSNSKTo=
 github.com/ernestosuarez/itertools v0.0.0-20190516153236-40a02c159e7b/go.mod h1:WzH8PFd6m6UcRNbYXLAjgjyvwE5EqBKwTYosDoUDG/Q=
+github.com/gammazero/deque v0.1.0 h1:f9LnNmq66VDeuAlSAapemq/U7hJ2jpIWa4c09q8Dlik=
+github.com/gammazero/deque v0.1.0/go.mod h1:KQw7vFau1hHuM8xmI9RbgKFbAsQFWmBpqQ2KenFLk6M=

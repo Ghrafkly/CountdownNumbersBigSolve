@@ -12,6 +12,7 @@ import (
 )
 
 var equations [][]string
+var sub = make(map[string]float64)
 
 func main() {
 	start := time.Now()
@@ -29,7 +30,7 @@ func main() {
 	// Deals with duplicates for Combinations
 	var cNums [][]string
 	allKeys := make(map[string]bool)
-	comb := itertools.CombinationsStr(number, 5)
+	comb := itertools.CombinationsStr(number, 3)
 
 	for item := range comb {
 		var strSlc string = strings.Join(item[:], ",") // Turns slice into string to create unique key
@@ -41,8 +42,7 @@ func main() {
 
 	// Deals with duplicates for Permutations
 	for _, item := range cNums {
-		if multiply(item) > 101 { // If all the numbers multiplied > 101 use the numberset
-			// fmt.Printf("Numbers: %v\n", item)
+		if multiply(item) { // If all the numbers multiplied > 101 use the numberset
 			var pNums [][]string
 			permKeys := make(map[string]bool)
 			perm := itertools.PermutationsStr(item, len(item))
@@ -113,6 +113,7 @@ func rpn(nums []string, ops []string, current []string, ops_needed int) {
 
 func equate(equations [][]string) []string {
 	var listResult []string
+	var eqString string
 	for _, item := range equations {
 		var eq []string
 		var temp []string
@@ -124,8 +125,29 @@ func equate(equations [][]string) []string {
 				temp = append(temp, eq[len(eq)-2], eq[len(eq)-1], term)
 				eq = eq[:len(eq)-2]
 
-				var calc string = strings.Join(temp, ",")
+				tempCopy := make([]string, len(temp))
+				copy(tempCopy, temp)
 
+				if term == "+" || term == "*" {
+					eqString = SortString(tempCopy)
+				} else {
+					eqString = strings.Join(temp, "")
+				}
+
+				if val, ok := sub[eqString]; ok {
+					v := fmt.Sprint(val)
+					if isIntegral(val) && val > 0 {
+						if val > 100 && val < 1000 {
+							listResult = append(listResult, []string{v}...)
+						}
+						eq = append(eq, v)
+					} else {
+						break
+					}
+					continue
+				}
+
+				var calc string = strings.Join(temp, ",")
 				expression, err := gorpn.New(calc)
 				if err != nil {
 					panic(err)
@@ -135,6 +157,7 @@ func equate(equations [][]string) []string {
 				if err != nil {
 					panic(err)
 				} else {
+					sub[eqString] = result
 					rs := fmt.Sprint(result)
 					if isIntegral(result) && result > 0 {
 						if result > 100 && result < 1000 {
@@ -156,7 +179,7 @@ func isIntegral(val float64) bool {
 	return val == float64(int(val))
 }
 
-func multiply(array []string) int {
+func multiply(array []string) bool {
 	var k []int
 	for _, i := range array {
 		j, _ := strconv.Atoi(i)
@@ -167,5 +190,15 @@ func multiply(array []string) int {
 	for _, v := range k {
 		result *= v
 	}
-	return result
+
+	if result > 101 {
+		return true
+	} else {
+		return false
+	}
+}
+
+func SortString(w []string) string {
+	sort.Strings(w)
+	return strings.Join(w, "")
 }

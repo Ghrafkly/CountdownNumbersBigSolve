@@ -29,7 +29,7 @@ func main() {
 	// Deals with duplicates for Combinations
 	var cNums [][]string
 	allKeys := make(map[string]bool)
-	comb := itertools.CombinationsStr(number, 4)
+	comb := itertools.CombinationsStr(number, 5)
 
 	for item := range comb {
 		var strSlc string = strings.Join(item[:], ",") // Turns slice into string to create unique key
@@ -41,28 +41,30 @@ func main() {
 
 	// Deals with duplicates for Permutations
 	for _, item := range cNums {
-		var pNums [][]string
-		permKeys := make(map[string]bool)
-		perm := itertools.PermutationsStr(item, len(item))
-		for x := range perm {
-			var permSlc string = strings.Join(x[:], ",") // Turns slice into string to create unique key
-			if _, value := permKeys[permSlc]; !value {
-				permKeys[permSlc] = true
-				pNums = append(pNums, [][]string{x}...)
+		if multiply(item) > 101 { // If all the numbers multiplied > 101 use the numberset
+			// fmt.Printf("Numbers: %v\n", item)
+			var pNums [][]string
+			permKeys := make(map[string]bool)
+			perm := itertools.PermutationsStr(item, len(item))
+			for x := range perm {
+				var permSlc string = strings.Join(x[:], ",") // Turns slice into string to create unique key
+				if _, value := permKeys[permSlc]; !value {
+					permKeys[permSlc] = true
+					pNums = append(pNums, [][]string{x}...)
+				}
 			}
+			for _, item := range pNums {
+				var current []string
+				rpn(item, operators, current, ops_needed)
+			}
+			sol = append(sol, []string(equate(equations))...)
+			for _, v := range sol {
+				i, _ := strconv.Atoi(v)
+				threeDigits[i] += 1
+			}
+			sol = nil
+			equations = nil
 		}
-
-		for _, item := range pNums {
-			var current []string
-			rpn(item, operators, current, ops_needed)
-		}
-		sol = append(sol, []string(equate(equations))...)
-		equations = nil
-	}
-
-	for _, v := range sol {
-		i, _ := strconv.Atoi(v)
-		threeDigits[i] += 1
 	}
 
 	var keys []int
@@ -73,8 +75,9 @@ func main() {
 	for _, k := range keys {
 		fmt.Printf("Key: %v, Value: %v\n", k, threeDigits[k])
 	}
+
 	elapsed := time.Since(start)
-	fmt.Printf("Elapsed: %v", elapsed)
+	fmt.Printf("Elapsed: %v\n", elapsed)
 
 	// file, err := os.Open("GoNumbers.csv")
 	// if err != nil {
@@ -151,4 +154,18 @@ func equate(equations [][]string) []string {
 
 func isIntegral(val float64) bool {
 	return val == float64(int(val))
+}
+
+func multiply(array []string) int {
+	var k []int
+	for _, i := range array {
+		j, _ := strconv.Atoi(i)
+		k = append(k, j)
+	}
+
+	result := 1
+	for _, v := range k {
+		result *= v
+	}
+	return result
 }

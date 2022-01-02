@@ -134,18 +134,21 @@ func equate(equations [][]string) []string {
 					eqString = strings.Join(temp, "")
 				}
 
-				if val, ok := sub[eqString]; ok {
-					v := fmt.Sprint(val)
-					if isIntegral(val) && val > 0 {
-						if val > 100 && val < 1000 {
-							listResult = append(listResult, []string{v}...)
-						}
-						eq = append(eq, v)
-					} else {
-						break
-					}
-					continue
-				}
+				////// Comment the below block in to see the changes //////
+				// if val, ok := sub[eqString]; ok {
+				// 	v := fmt.Sprint(val)
+				// 	if isIntegral(val) && val > 0 {
+				// 		if val > 100 && val < 1000 {
+				// 			listResult = append(listResult, []string{v}...)
+				// 		}
+				// 		eq = append(eq, v)
+				// 	} else {
+				// 		break
+				// 	}
+				// 	temp = nil
+				// 	continue
+				// }
+				///////////////////////////////////////////////////////////
 
 				var calc string = strings.Join(temp, ",")
 				expression, err := gorpn.New(calc)

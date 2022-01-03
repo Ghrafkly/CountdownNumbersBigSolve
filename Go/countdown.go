@@ -18,10 +18,13 @@ var sub = make(map[string]float64)
 
 func main() {
 	start := time.Now()
+	// readFromCsv()
 	var operators = []string{"+", "-", "*", "/"}
 	var number = []string{"1", "1", "2", "2", "3", "3", "4", "4", "5", "5", "6", "6", "7", "7", "8", "8", "9", "9", "10", "10", "25", "50", "75", "100"}
+
 	var ops_needed int = -1
 	var sol []string
+	var setSize int = 3
 
 	// Creates a dict of all 3 digit numbers. Values set to 0
 	threeDigits := make(map[int]int)
@@ -32,7 +35,7 @@ func main() {
 	// Deals with duplicates for Combinations
 	var cNums [][]string
 	allKeys := make(map[string]bool)
-	comb := itertools.CombinationsStr(number, 5)
+	comb := itertools.CombinationsStr(number, setSize)
 	for item := range comb {
 		var strSlc string = strings.Join(item[:], ",") // Turns slice into string to create unique key
 		if _, value := allKeys[strSlc]; !value {
@@ -42,16 +45,20 @@ func main() {
 	}
 
 	// Deals with duplicates for Permutations
+	permKeys := make(map[string]bool)
 	for _, item := range cNums {
 		var pNums [][]string
-		permKeys := make(map[string]bool)
 		perm := itertools.PermutationsStr(item, len(item))
 		for x := range perm {
-			var permSlc string = strings.Join(x[:], ",") // Turns slice into string to create unique key
+			sorted := make([]string, len(x))
+			copy(sorted, x)
+			sort.Strings(sorted)
+			var permSlc string = strings.Join(sorted[:], "") // Turns slice into string to create unique key
 			if _, value := permKeys[permSlc]; !value {
-				permKeys[permSlc] = true
 				pNums = append(pNums, [][]string{x}...)
+				permKeys[permSlc] = true
 			}
+			// fmt.Println(permKeys)
 		}
 
 		for _, item := range pNums {
@@ -59,7 +66,10 @@ func main() {
 			rpn(item, operators, current, ops_needed)
 		}
 
+		// s := time.Now()
 		sol = append(sol, []string(equate(equations))...) // Add all (valid) solutions to a slice
+		// e := time.Since(s)
+		// fmt.Printf("Equation: %v\n", e)
 
 		for _, v := range sol {
 			i, _ := strconv.Atoi(v) // Convert solutions into ints
@@ -70,25 +80,40 @@ func main() {
 	}
 
 	// Write the key, value to a csv file
-	file, _ := os.Create("GoNumbers.csv")
-	defer file.Close()
-
-	w := csv.NewWriter(file)
-	defer w.Flush()
-
-	var keys []int
-	for k := range threeDigits {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-	for _, k := range keys {
-		row := []string{strconv.Itoa(k), strconv.Itoa(threeDigits[k])}
-		w.Write(row)
-	}
+	writeToCsv("GoNumbers.csv", threeDigits)
 
 	elapsed := time.Since(start)
 	fmt.Printf("Elapsed: %v\n", elapsed)
 }
+
+func writeToCsv(fileName string, dict map[int]int) {
+	file, _ := os.Create(fileName)
+	w := csv.NewWriter(file)
+	defer w.Flush()
+
+	var keys []int
+	for k := range dict {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		row := []string{strconv.Itoa(k), strconv.Itoa(dict[k])}
+		w.Write(row)
+	}
+}
+
+/* func readFromCsv() {
+	file, _ := os.Open("GoEquations.csv")
+	defer file.Close()
+
+	r := csv.NewReader(file)
+	data, _ := r.ReadAll()
+
+	for _, record := range data {
+		solution, _ := strconv.ParseFloat(record[1], 64)
+		sub[record[0]] = solution
+	}
+} */
 
 func rpn(nums []string, ops []string, current []string, ops_needed int) {
 	if ops_needed == 0 && len(nums) == 0 {
@@ -113,10 +138,11 @@ func rpn(nums []string, ops []string, current []string, ops_needed int) {
 	}
 }
 
-func equate(equations [][]string) []string {
+func equate(equa [][]string) []string {
 	var listResult []string
 	var eqString string
-	for _, item := range equations { // equations = [[1,2,+,3,+] [1,2,+,3-] etc.]
+	var test = make(map[string]float64)
+	for _, item := range equa { // equations = [[1,2,+,3,+] [1,2,+,3-] etc.]
 		var eq []string
 		var temp []string
 		for _, term := range item { // item = [1,2,+,3,+]
@@ -133,8 +159,18 @@ func equate(equations [][]string) []string {
 					eqString = strings.Join(temp, ",")
 				}
 
+				if val, ok := test[eqString]; ok {
+					v := fmt.Sprint(val)
+					eq = append(eq, v)
+					temp = nil
+					continue
+				}
+
 				if val, ok := sub[eqString]; ok { // If value for key exists, use the value. Huge save on comp. time
 					v := fmt.Sprint(val)
+					if val == 113 {
+						fmt.Printf("Not In: %v, Equation: %v\n", eqString, item)
+					}
 					if isIntegral(val) && val > 0 {
 						if val > 100 && val < 1000 {
 							listResult = append(listResult, []string{v}...)
@@ -147,7 +183,11 @@ func equate(equations [][]string) []string {
 					expression, _ := gorpn.New(eqString)
 					result, _ := expression.Evaluate(nil)
 					sub[eqString] = result
+					test[eqString] = result
 					rs := fmt.Sprint(result)
+					if result == 113 {
+						fmt.Printf("Not In: %v, Equation: %v\n", eqString, item)
+					}
 					if isIntegral(result) && result > 0 {
 						if result > 100 && result < 1000 {
 							listResult = append(listResult, []string{rs}...)
@@ -172,13 +212,3 @@ func SortString(w []string) string {
 	sort.Sort(sort.Reverse(sort.StringSlice(w)))
 	return strings.Join(w, ",")
 }
-
-// func check(val float64) bool {
-// 	if isIntegral(val) && val > 0 {
-// 		if val > 100 && val < 1000 {
-// 			return true
-// 		}
-// 	} else {
-// 		return false
-// 	}
-// }

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -30,8 +32,7 @@ func main() {
 	// Deals with duplicates for Combinations
 	var cNums [][]string
 	allKeys := make(map[string]bool)
-	comb := itertools.CombinationsStr(number, 3)
-
+	comb := itertools.CombinationsStr(number, 5)
 	for item := range comb {
 		var strSlc string = strings.Join(item[:], ",") // Turns slice into string to create unique key
 		if _, value := allKeys[strSlc]; !value {
@@ -42,30 +43,38 @@ func main() {
 
 	// Deals with duplicates for Permutations
 	for _, item := range cNums {
-		if multiply(item) { // If all the numbers multiplied > 101 use the numberset
-			var pNums [][]string
-			permKeys := make(map[string]bool)
-			perm := itertools.PermutationsStr(item, len(item))
-			for x := range perm {
-				var permSlc string = strings.Join(x[:], ",") // Turns slice into string to create unique key
-				if _, value := permKeys[permSlc]; !value {
-					permKeys[permSlc] = true
-					pNums = append(pNums, [][]string{x}...)
-				}
+		var pNums [][]string
+		permKeys := make(map[string]bool)
+		perm := itertools.PermutationsStr(item, len(item))
+		for x := range perm {
+			var permSlc string = strings.Join(x[:], ",") // Turns slice into string to create unique key
+			if _, value := permKeys[permSlc]; !value {
+				permKeys[permSlc] = true
+				pNums = append(pNums, [][]string{x}...)
 			}
-			for _, item := range pNums {
-				var current []string
-				rpn(item, operators, current, ops_needed)
-			}
-			sol = append(sol, []string(equate(equations))...)
-			for _, v := range sol {
-				i, _ := strconv.Atoi(v)
-				threeDigits[i] += 1
-			}
-			sol = nil
-			equations = nil
 		}
+
+		for _, item := range pNums {
+			var current []string
+			rpn(item, operators, current, ops_needed)
+		}
+
+		sol = append(sol, []string(equate(equations))...) // Add all (valid) solutions to a slice
+
+		for _, v := range sol {
+			i, _ := strconv.Atoi(v) // Convert solutions into ints
+			threeDigits[i] += 1     // Increment the dict by one where a solution exists
+		}
+		sol = nil       // Reset sol so it doesn't kill the memory
+		equations = nil // Reset equations for next round
 	}
+
+	// Write the key, value to a csv file
+	file, _ := os.Create("GoNumbers.csv")
+	defer file.Close()
+
+	w := csv.NewWriter(file)
+	defer w.Flush()
 
 	var keys []int
 	for k := range threeDigits {
@@ -73,17 +82,12 @@ func main() {
 	}
 	sort.Ints(keys)
 	for _, k := range keys {
-		fmt.Printf("Key: %v, Value: %v\n", k, threeDigits[k])
+		row := []string{strconv.Itoa(k), strconv.Itoa(threeDigits[k])}
+		w.Write(row)
 	}
 
 	elapsed := time.Since(start)
 	fmt.Printf("Elapsed: %v\n", elapsed)
-
-	// file, err := os.Open("GoNumbers.csv")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer file.Close()
 }
 
 func rpn(nums []string, ops []string, current []string, ops_needed int) {
@@ -101,65 +105,47 @@ func rpn(nums []string, ops []string, current []string, ops_needed int) {
 		}
 	}
 
-	if len(nums) > 0 {
-		v := nums[len(nums)-1]       // Save pop value
-		nums = nums[:len(nums)-1]    // Pop last element
+	if size := len(nums); size > 0 {
+		v := nums[size-1]            // Save pop value
+		nums = nums[:size-1]         // Pop last element
 		current = append(current, v) // Push element
 		rpn(nums, ops, current, ops_needed+1)
-		current = current[:len(current)-1] // These are reached
-		nums = append(nums, v)
 	}
 }
 
 func equate(equations [][]string) []string {
 	var listResult []string
 	var eqString string
-	for _, item := range equations {
+	for _, item := range equations { // equations = [[1,2,+,3,+] [1,2,+,3-] etc.]
 		var eq []string
 		var temp []string
-		for _, term := range item {
-			_, err := strconv.Atoi(term)
+		for _, term := range item { // item = [1,2,+,3,+]
+			_, err := strconv.Atoi(term) // Attempt to convert term to int
 			if err == nil {
-				eq = append(eq, term)
+				eq = append(eq, term) // Append term to eq if int i.e. [1,2]
 			} else {
-				temp = append(temp, eq[len(eq)-2], eq[len(eq)-1], term)
-				eq = eq[:len(eq)-2]
+				temp = append(temp, eq[len(eq)-2], eq[len(eq)-1], term) // Create postfix equation [1,2,+]
+				eq = eq[:len(eq)-2]                                     // Remove last two elements from eq. Setting to nil will break everything
 
-				tempCopy := make([]string, len(temp))
-				copy(tempCopy, temp)
-
-				if term == "+" || term == "*" {
-					eqString = SortString(tempCopy)
+				if term == "+" || term == "*" { // Turn postfix equation into standardised string for key
+					eqString = SortString(temp)
 				} else {
-					eqString = strings.Join(temp, "")
+					eqString = strings.Join(temp, ",")
 				}
 
-				////// Comment the below block in to see the changes //////
-				// if val, ok := sub[eqString]; ok {
-				// 	v := fmt.Sprint(val)
-				// 	if isIntegral(val) && val > 0 {
-				// 		if val > 100 && val < 1000 {
-				// 			listResult = append(listResult, []string{v}...)
-				// 		}
-				// 		eq = append(eq, v)
-				// 	} else {
-				// 		break
-				// 	}
-				// 	temp = nil
-				// 	continue
-				// }
-				///////////////////////////////////////////////////////////
-
-				var calc string = strings.Join(temp, ",")
-				expression, err := gorpn.New(calc)
-				if err != nil {
-					panic(err)
-				}
-
-				result, err := expression.Evaluate(nil)
-				if err != nil {
-					panic(err)
-				} else {
+				if val, ok := sub[eqString]; ok { // If value for key exists, use the value. Huge save on comp. time
+					v := fmt.Sprint(val)
+					if isIntegral(val) && val > 0 {
+						if val > 100 && val < 1000 {
+							listResult = append(listResult, []string{v}...)
+						}
+						eq = append(eq, v)
+					} else {
+						break
+					}
+				} else { // If value doesn't exist, compute it and add it to dict.
+					expression, _ := gorpn.New(eqString)
+					result, _ := expression.Evaluate(nil)
 					sub[eqString] = result
 					rs := fmt.Sprint(result)
 					if isIntegral(result) && result > 0 {
@@ -182,26 +168,17 @@ func isIntegral(val float64) bool {
 	return val == float64(int(val))
 }
 
-func multiply(array []string) bool {
-	var k []int
-	for _, i := range array {
-		j, _ := strconv.Atoi(i)
-		k = append(k, j)
-	}
-
-	result := 1
-	for _, v := range k {
-		result *= v
-	}
-
-	if result > 101 {
-		return true
-	} else {
-		return false
-	}
-}
-
 func SortString(w []string) string {
-	sort.Strings(w)
-	return strings.Join(w, "")
+	sort.Sort(sort.Reverse(sort.StringSlice(w)))
+	return strings.Join(w, ",")
 }
+
+// func check(val float64) bool {
+// 	if isIntegral(val) && val > 0 {
+// 		if val > 100 && val < 1000 {
+// 			return true
+// 		}
+// 	} else {
+// 		return false
+// 	}
+// }

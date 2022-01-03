@@ -46,10 +46,10 @@ class Calculations:
                                     break
                                 case _:
                                     a = tuple(sorted(smList))
-                                    if a not in dupeParEq:
-                                        if 100 < exp < 1000:
-                                            dict[exp] += 1
-                                        dupeParEq.add(a)
+                                    # if a not in dupeParEq:
+                                    if 100 < exp < 1000:
+                                        dict[exp] += 1
+                                    dupeParEq.add(a)
                                     stack.insert(0, exp)
 
             stack.clear() # Reset stack for next intermediate equation
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     numbers = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,25,50,75,100] # All the numbers in the Countdown rules
     # numbers = [5,10,25,50] # All the numbers in the Countdown rules
     ops = ['+', '-', '*', '/']
-    tileSetSize = 3 # Change this unless you have a v. powerful computer
+    tileSetSize = 4 # Change this unless you have a v. powerful computer
     equations = []
     dupeNumSet = set()
 

@@ -20,6 +20,7 @@ func main() {
 	start := time.Now()
 	var operators = []string{"+", "-", "*", "/"}
 	var number = []string{"1", "1", "2", "2", "3", "3", "4", "4", "5", "5", "6", "6", "7", "7", "8", "8", "9", "9", "10", "10", "25", "50", "75", "100"}
+	// var number = []string{"75", "10", "3", "1", "9", "4", "100", "7"}
 	var ops_needed int = -1
 	var sol []string
 	// var a int
@@ -48,10 +49,7 @@ func main() {
 		var pNums [][]string
 		perm := itertools.PermutationsStr(item, len(item))
 		for x := range perm {
-			sorted := make([]string, len(x))
-			copy(sorted, x)
-			sort.Strings(sorted)
-			var permSlc string = strings.Join(sorted[:], "") // Turns slice into string to create unique key
+			var permSlc string = strings.Join(x[:], ",") // Turns slice into string to create unique key
 			if _, value := permKeys[permSlc]; !value {
 				pNums = append(pNums, [][]string{x}...)
 				permKeys[permSlc] = true
@@ -129,10 +127,10 @@ func equate(equa [][]string) []string {
 	var listResult []string
 	var eqString string
 	var test = make(map[string]float64)
-	for _, item := range equa { // equations = [[1,2,+,3,+] [1,2,+,3-] etc.]
+	for _, item := range equa { // equa = [[1,2,+,3,+] [1,2,+,3-] etc.]
 		var eq []string
-		var temp []string
 		for _, term := range item { // item = [1,2,+,3,+]
+			var temp []string
 			_, err := strconv.Atoi(term) // Attempt to convert term to int
 			if err == nil {
 				eq = append(eq, term) // Append term to eq if int i.e. [1,2]
@@ -146,18 +144,26 @@ func equate(equa [][]string) []string {
 					eqString = strings.Join(temp, ",")
 				}
 
-				if val, ok := test[eqString]; ok {
-					v := fmt.Sprint(val)
-					eq = append(eq, v)
-					temp = nil
+				if (temp[2] == "/" || temp[2] == "*") && (temp[1] == "1") { // Ignores equations that x/1 or x*1
+					eq = append(eq, temp[0])
 					continue
+				}
+
+				if val, ok := test[eqString]; ok { // Test is a temporary lookup table
+					if isIntegral(val) && val > 0 {
+						if val > 100 && val < 1000 {
+							v := fmt.Sprint(val)
+							eq = append(eq, v)
+							continue
+						}
+					} else {
+						break
+					}
 				}
 
 				if val, ok := sub[eqString]; ok { // If value for key exists, use the value. Huge save on comp. time
 					v := fmt.Sprint(val)
-					// if val == 113 {
-					// 	fmt.Printf("Not In: %v, Equation: %v\n", eqString, item)
-					// }
+					test[eqString] = val
 					if isIntegral(val) && val > 0 {
 						if val > 100 && val < 1000 {
 							listResult = append(listResult, []string{v}...)
@@ -172,9 +178,6 @@ func equate(equa [][]string) []string {
 					sub[eqString] = result
 					test[eqString] = result
 					rs := fmt.Sprint(result)
-					// if result == 113 {
-					// 	fmt.Printf("Not In: %v, Equation: %v\n", eqString, item)
-					// }
 					if isIntegral(result) && result > 0 {
 						if result > 100 && result < 1000 {
 							listResult = append(listResult, []string{rs}...)
@@ -184,7 +187,6 @@ func equate(equa [][]string) []string {
 						break
 					}
 				}
-				temp = nil
 			}
 		}
 	}
@@ -199,16 +201,3 @@ func SortString(w []string) string {
 	sort.Sort(sort.Reverse(sort.StringSlice(w)))
 	return strings.Join(w, ",")
 }
-
-/* func readFromCsv() {
-	file, _ := os.Open("GoEquations.csv")
-	defer file.Close()
-
-	r := csv.NewReader(file)
-	data, _ := r.ReadAll()
-
-	for _, record := range data {
-		solution, _ := strconv.ParseFloat(record[1], 64)
-		sub[record[0]] = solution
-	}
-} */

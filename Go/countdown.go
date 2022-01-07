@@ -20,10 +20,8 @@ func main() {
 	start := time.Now()
 	var operators = []string{"+", "-", "*", "/"}
 	var number = []string{"1", "1", "2", "2", "3", "3", "4", "4", "5", "5", "6", "6", "7", "7", "8", "8", "9", "9", "10", "10", "25", "50", "75", "100"}
-	// var number = []string{"75", "10", "3", "1", "9", "4", "100", "7"}
 	var ops_needed int = -1
 	var sol []string
-	// var a int
 
 	// Creates a dict of all 3 digit numbers. Values set to 0
 	threeDigits := make(map[int]int)
@@ -34,7 +32,7 @@ func main() {
 	// Deals with duplicates for Combinations
 	var cNums [][]string
 	allKeys := make(map[string]bool)
-	comb := itertools.CombinationsStr(number, 5)
+	comb := itertools.CombinationsStr(number, 4)
 	for item := range comb {
 		var strSlc string = strings.Join(item[:], ",") // Turns slice into string to create unique key
 		if _, value := allKeys[strSlc]; !value {
@@ -57,16 +55,12 @@ func main() {
 		}
 
 		for _, item := range pNums {
+			// fmt.Println(item)
 			var current []string
 			rpn(item, operators, current, ops_needed)
 		}
 
-		// s := time.Now()
 		sol = append(sol, []string(equate(equations))...) // Add all (valid) solutions to a slice
-		// e := time.Since(s)
-		// fmt.Printf("Equate Time: %v\n", e)
-
-		// a += len(equations)
 
 		for _, v := range sol {
 			i, _ := strconv.Atoi(v) // Convert solutions into ints
@@ -76,10 +70,11 @@ func main() {
 		equations = nil // Reset equations for next round
 	}
 
+	cNums = nil
+
 	// Write the key, value to a csv file
 	writeToCsv("GoNumbers.csv", threeDigits)
 
-	// fmt.Println(a)
 	elapsed := time.Since(start)
 	fmt.Printf("Elapsed: %v\n", elapsed)
 }
@@ -126,8 +121,8 @@ func rpn(nums []string, ops []string, current []string, ops_needed int) {
 func equate(equa [][]string) []string {
 	var listResult []string
 	var eqString string
-	var test = make(map[string]float64)
-	for _, item := range equa { // equa = [[1,2,+,3,+] [1,2,+,3-] etc.]
+	var test = make(map[string]float64) // Test is a temporary lookup table for each set of numbers
+	for _, item := range equa {         // equa = [[1,2,+,3,+] [1,2,+,3-] etc.]
 		var eq []string
 		for _, term := range item { // item = [1,2,+,3,+]
 			var temp []string
@@ -149,13 +144,16 @@ func equate(equa [][]string) []string {
 					continue
 				}
 
-				if val, ok := test[eqString]; ok { // Test is a temporary lookup table
-					if isIntegral(val) && val > 0 {
-						if val > 100 && val < 1000 {
-							v := fmt.Sprint(val)
-							eq = append(eq, v)
-							continue
-						}
+				if temp[2] == "*" && temp[0] == "1" { // Ignores equations that 1*x
+					eq = append(eq, temp[1])
+					continue
+				}
+
+				if val, ok := test[eqString]; ok { // IF a set of numbers has already done an equation, don't add to solution list
+					if isIntegral(val) && val > 0 { // i.e. 100 + 1 might be done if other different equations
+						v := fmt.Sprint(val)
+						eq = append(eq, v)
+						continue
 					} else {
 						break
 					}
@@ -198,6 +196,6 @@ func isIntegral(val float64) bool {
 }
 
 func SortString(w []string) string {
-	sort.Sort(sort.Reverse(sort.StringSlice(w)))
+	sort.Sort(sort.Reverse(sort.StringSlice(w))) // Reversed so the RPN import can be used
 	return strings.Join(w, ",")
 }

@@ -149,15 +149,15 @@ func equate(equa [][]string) []string {
 					continue
 				}
 
-				if val, ok := test[eqString]; ok { // IF a set of numbers has already done an equation, don't add to solution list
-					if isIntegral(val) && val > 0 { // i.e. 100 + 1 might be done if other different equations
-						v := fmt.Sprint(val)
-						eq = append(eq, v)
-						continue
-					} else {
-						break
-					}
-				}
+				// if val, ok := test[eqString]; ok { // IF a set of numbers has already done an equation, don't add to solution list
+				// 	if isIntegral(val) && val > 0 { // i.e. 100 + 1 might be done if other different equations
+				// 		v := fmt.Sprint(val)
+				// 		eq = append(eq, v)
+				// 		continue
+				// 	} else {
+				// 		break
+				// 	}
+				// }
 
 				if val, ok := sub[eqString]; ok { // If value for key exists, use the value. Huge save on comp. time
 					v := fmt.Sprint(val)
